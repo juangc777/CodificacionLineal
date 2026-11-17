@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Codificación de Línea - UAEM</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="./img/icon-192.png">
+    <meta name="theme-color" content="#68aa97">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Codificación Lineal">
+    <style>
+        * {box-sizing: border-box; font-family: "Times New Roman", Times, serif; margin:0; padding:0;}
+        body {background:#68aa97; color:#111; padding:16px; max-width:500px; margin:0 auto; min-height: 100vh;}
+        
+        /* ---- ESTILOS GENERALES ---- */
+        .pantalla { display: none; animation: fadeIn 0.4s; }
+        .pantalla.activa { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        button {padding:12px 20px; margin:10px 0; border:none; border-radius:6px; 
+            background:#68aa97; color:#fff; font-weight:bold; cursor:pointer; 
+            font-size:16px; width:100%; font-family: system-ui, sans-serif;
+            transition: background 0.2s;}
+        button:hover { background: #1e8c6b; }
+        button:disabled { background: #ccc; cursor: not-allowed; color: #777; }
+        
+        /* ---- PORTADA ---- */
+        .portada-container {
+            background: #d3c8c8;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .portada-header img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .portada-container h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            line-height: 1.4;
+        }
+        .portada-container h3 {
+            font-size: 1rem;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            line-height: 1.4;
+            font-weight: normal;
+        }
+        .portada-container .titulo-trabajo {
+            font-size: 1.4rem;
+            font-style: italic;
+            margin: 30px 0;
+            font-weight: bold;
+        }
+        .portada-container .presenta {
+            font-size: 1rem;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        .portada-container .integrantes {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* ---- TARJETAS Y CONTROLES ---- */
+        .card {background:#9e8d8d; padding:16px; border-radius:10px; margin:12px 0; border:1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.05);}
+        .card h3 { font-family: system-ui, sans-serif; font-size: 1.1rem; margin-bottom: 10px; text-align: center;}
+        
+        input, select {width:100%; padding:12px; font-size:18px; margin:8px 0; border-radius:6px;
+            border:1px solid #bbb; background:#fff; color:#111; font-family: monospace; text-align: center;}
+        
+        .select-wrapper {
+            position: relative;
+            margin: 15px 0;
+        }
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 30px;
+            cursor: pointer;
+        }
+        .select-wrapper::after {
+            content: "▼";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #666;
+        }
+
+        canvas {width:100%; background:#fff; border-radius:8px; margin:6px 0; border:1px solid #ddd;}
+        h4 {color:#111; font-family: system-ui, sans-serif; margin-bottom: 6px;}
+        
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px;}
+        .btn-group button { width: auto; flex: 1; padding: 8px 10px; font-size: 14px; margin: 0; background:#e0e0e0; color:#333; }
+        .btn-group button:hover { background:#ccc; }
+        
+        .error-msg { color: #d32f2f; font-size: 0.9rem; text-align: center; margin-top: 5px; display: none; font-family: system-ui, sans-serif;}
+        .error-msg.visible { display: block; }
+        
+        .nav-buttons { display: flex; gap: 8px; margin-top: 15px;}
+        .nav-buttons button { margin: 0; font-size: 0.9rem; padding: 10px;}
+    </style>
+</head>
+<body>
+
+    <!-- ================= PANTALLA 1: PORTADA ================= -->
+    <div id="pantalla-portada" class="pantalla activa">
+        <div class="portada-container">
+            <div class="portada-header">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/UAEMex_logo.svg/1200px-UAEMex_logo.svg.png" alt="Logo UAEM">
+            </div>
+            
+            <h2>UNIVERSIDAD AUTÓNOMA DEL ESTADO DE MÉXICO</h2>
+            <h3>CENTRO UNIVERSITARIO UAEM ZUMPANGO</h3>
+            <h3>INGENIERÍA EN COMPUTACIÓN</h3>
+            <h3>TRANSMISIÓN DE DATOS</h3>
+            
+            <div class="titulo-trabajo">"CODIFICACIÓN LINEAL"</div>
+            
+            <div class="presenta">presenta:</div>
+            <div class="integrantes">
+                ALVAREZ LUGARDO LAURA SELENE<br>
+                GARCÍA CERRITOS JUAN CARLOS
+            </div>
+
+            <button onclick="irA('pantalla-config')">INICIAR SIMULADOR</button>
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA 2: CONFIGURACIÓN ================= -->
+    <div id="pantalla-config" class="pantalla">
+        <div class="card">
+            <h3>Configuración de la Señal</h3>
+            
+            <label style="font-family: system-ui; font-size: 0.9rem; font-weight: bold; color: #444;">Secuencia de 12 bits (solo 0 y 1)</label>
+            <input type="text" id="bitInput" maxlength="12" value=""
+                   inputmode="numeric" pattern="[01]*" autocomplete="off"
+                   placeholder="Ingresa 12 bits">
+            
+            <div class="btn-group">
+                <button onclick="generarAleatorio()">Generar Aleatoria</button>
+            </div>
+            <div id="errorBits" class="error-msg">Debes ingresar exactamente 12 bits (0s y 1s).</div>
+
+            <label for="selector" style="display:block; margin-top:20px; font-weight:bold; font-family: system-ui; font-size: 0.9rem;">Elige qué gráfica quieres ver:</label>
+            <div class="select-wrapper">
+                <select id="selector">
+                    <option value="todas">Todas las codificaciones</option>
+                    <option value="nrzl">NRZ-L</option>
+                    <option value="nrzi">NRZ-I</option>
+                    <option value="manchester">Manchester</option>
+                    <option value="mandif">Manchester Diferencial</option>
+                    <option value="ami">AMI Bipolar</option>
+                    <option value="pseudo">Pseudoternario</option>
+                </select>
+            </div>
+
+            <button id="btnGraficar" onclick="irAGraficas()" disabled style="margin-top: 10px; background: #29b990; font-size: 1.1rem; padding: 14px;">GRAFICAR</button>
+            
+            <div class="nav-buttons">
+                <button onclick="irA('pantalla-portada')" style="background: #666;">Volver al inicio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PANTALLA 3: GRÁFICAS ================= -->
+    <div id="pantalla-graficas" class="pantalla">
+        <div class="card">
+            <h3>Resultados</h3>
+            <p style="font-family: system-ui; font-size: 0.9rem; text-align: center; margin-bottom: 15px;">Bits ingresados: <strong id="bitsMostrados"></strong></p>
+            
+            <div class="nav-buttons">
+                <button onclick="irA('pantalla-config')" style="background: #29b990;">Modificar Bits</button>
+                <button onclick="irA('pantalla-portada')" style="background: #666;">Ir al incicio</button>
+            </div>
+        </div>
+
+        <!-- Contenedores de las gráficas -->
+        <div class="card grafica-card" id="card-nrzl"><h4>NRZ-L</h4><canvas id="nrzl" height="110"></canvas></div>
+        <div class="card grafica-card" id="card-nrzi"><h4>NRZ-I</h4><canvas id="nrzi" height="110"></canvas></div>
+        <div class="card grafica-card" id="card-manchester"><h4>Manchester</h4><canvas id="manchester" height="110"></canvas></div>
+        <div class="card grafica-card" id="card-mandif"><h4>Manchester Diferencial</h4><canvas id="mandif" height="110"></canvas></div>
+        <div class="card grafica-card" id="card-ami"><h4>AMI Bipolar</h4><canvas id="ami" height="110"></canvas></div>
+        <div class="card grafica-card" id="card-pseudo"><h4>Pseudoternario</h4><canvas id="pseudo" height="110"></canvas></div>
+    </div>
+
+<script>
+/* ================= NAVEGACIÓN ENTRE PANTALLAS ================= */
+function irA(idPantalla) {
+    // Oculta todas las pantallas
+    document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    // Muestra la solicitada
+    document.getElementById(idPantalla).classList.add('activa');
+    window.scrollTo(0, 0);
+
+    // Si vamos a la pantalla de config, validamos el formulario
+    if (idPantalla === 'pantalla-config') {
+        validarFormulario();
+    }
+}
+
+function irAGraficas() {
+    if(bitInput.value.length !== 12) return;
+    // Actualiza el texto de los bits mostrados
+    document.getElementById('bitsMostrados').textContent = bitInput.value;
+    // Pasa a la pantalla de gráficas
+    irA('pantalla-graficas');
+    // Espera un momento a que el DOM sea visible para ajustar el ancho de los canvas
+    setTimeout(() => {
+        ajustarCanvas();
+        dibujarTodo();
+    }, 50);
+}
+
+/* ================= VALIDACIÓN Y FILTRADO DE BITS ================= */
+const bitInput = document.getElementById("bitInput");
+const btnGraficar = document.getElementById("btnGraficar");
+const errorBits = document.getElementById("errorBits");
+
+function validarFormulario() {
+    const valor = bitInput.value;
+    if (valor.length === 12) {
+        btnGraficar.disabled = false;
+        errorBits.classList.remove('visible');
+    } else {
+        btnGraficar.disabled = true;
+        if (valor.length > 0) errorBits.classList.add('visible');
+        else errorBits.classList.remove('visible');
+    }
+}
+
+bitInput.addEventListener("keydown", function(e){
+    const teclasPermitidas = ["Backspace","Delete","ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End","Tab","Enter"];
+    if (teclasPermitidas.includes(e.key)) return;
+    if ((e.ctrlKey || e.metaKey) && ["a","c","v","x"].includes(e.key.toLowerCase())) return;
+    if (e.key !== "0" && e.key !== "1") e.preventDefault();
+});
+
+function limpiarBits(valor){ return valor.replace(/[^01]/g, "").slice(0,12); }
+
+bitInput.addEventListener("input", function(){
+    const limpio = limpiarBits(this.value);
+    if (this.value !== limpio) this.value = limpio;
+    validarFormulario();
+});
+
+bitInput.addEventListener("paste", function(e){
+    e.preventDefault();
+    const texto = (e.clipboardData || window.clipboardData).getData("text");
+    const limpio = limpiarBits(texto);
+    const inicio = this.selectionStart;
+    const fin = this.selectionEnd;
+    const actual = this.value;
+    const nuevo = (actual.slice(0,inicio) + limpio + actual.slice(fin)).slice(0,12);
+    this.value = limpiarBits(nuevo);
+    this.setSelectionRange(Math.min(inicio+limpio.length,12), Math.min(inicio+limpio.length,12));
+    validarFormulario();
+});
+
+function generarAleatorio(){
+    let sec = "";
+    for(let i=0;i<12;i++) sec += Math.random()>0.5 ? "1" : "0";
+    bitInput.value = sec;
+    validarFormulario();
+}
+
+/* ================= LÓGICA DE LAS GRÁFICAS ================= */
+const altoCanvas = 110;
+const centro = altoCanvas / 2;
+const escala = 32;
+
+function nrzL(bits){ return [...bits].map(b => b==='1' ? 1 : -1); }
+function nrzI(bits){
+    let nivel = -1;
+    return [...bits].map(b => {if(b==='1') nivel *= -1; return nivel;})
+}
+function manchester(bits){
+    let res = [];
+    for(let b of bits) res.push(b==='1' ? [1,-1] : [-1,1]);
+    return res;
+}
+function manchesterDif(bits){
+    let nivel = -1;
+    let res = [];
+    for(let b of bits){
+        if(b==='0') nivel *= -1;
+        res.push([nivel, nivel*-1]);
+    }
+    return res;
+}
+function ami(bits){
+    let polaridad = 1;
+    return [...bits].map(b => {
+        if(b==='0') return 0;
+        let val = polaridad;
+        polaridad *= -1;
+        return val;
+    })
+}
+function pseudoternario(bits){
+    let polaridad = 1;
+    return [...bits].map(b => {
+        if(b==='1') return 0;
+        let val = polaridad;
+        polaridad *= -1;
+        return val;
+    })
+}
+
+/* ---- FUNCIONES DE DIBUJO ---- */
+function prepararCanvas(c){
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0,0,c.width,altoCanvas);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,c.width,altoCanvas);
+    ctx.strokeStyle="#bbbbbb"; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(0,centro); ctx.lineTo(c.width,centro); ctx.stroke();
+    ctx.setLineDash([]);
+    return ctx;
+}
+
+function dibujarSeparadores(ctx, c, anchoBit){
+    ctx.strokeStyle="#888"; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    for(let i=0;i<=12;i++){
+        const x = i*anchoBit;
+        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,altoCanvas); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.fillStyle="#555"; ctx.font="10px system-ui"; ctx.textAlign="center";
+    for(let i=0;i<12;i++){
+        ctx.fillText((i+1).toString(), i*anchoBit + anchoBit/2, 12);
+    }
+}
+
+function iniciarBarrido(c){
+    if(c._anim) cancelAnimationFrame(c._anim);
+    const ctx = c.getContext('2d');
+    const inicio = performance.now();
+    const duracionTotal = 12 * 700;
+
+    function paso(t){
+        const transcurrido = t - inicio;
+        const progreso = Math.min(transcurrido / duracionTotal, 1);
+        const x = progreso * c.width;
+
+        if(c._redibujar) c._redibujar();
+
+        ctx.save();
+        ctx.strokeStyle = "#e63946";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6,4]);
+        ctx.beginPath();
+        ctx.moveTo(x,0);
+        ctx.lineTo(x,altoCanvas);
+        ctx.stroke();
+        ctx.restore();
+
+        if(progreso < 1) c._anim = requestAnimationFrame(paso);
+        else c._anim = null;
+    }
+    c._anim = requestAnimationFrame(paso);
+}
+
+function dibujarSimple(id, niveles){
+    const c = document.getElementById(id);
+    if (c.width === 0) return; // Si no es visible aún
+    const anchoBit = c.width / 12;
+    prepararCanvas(c);
+
+    c._redibujar = function(){
+        const ctx2 = prepararCanvas(c);
+        dibujarSeparadores(ctx2, c, anchoBit);
+        ctx2.strokeStyle="#0b7a5a"; ctx2.lineWidth=2; ctx2.setLineDash([]);
+        ctx2.beginPath();
+        let x=0;
+        for(let n of niveles){
+            const y = centro - n*escala;
+            ctx2.lineTo(x,y); ctx2.lineTo(x+anchoBit,y);
+            x += anchoBit;
+        }
+        ctx2.stroke();
+    };
+    c._redibujar();
+    iniciarBarrido(c);
+}
+
+function dibujarDoble(id, nivelesDobles){
+    const c = document.getElementById(id);
+    if (c.width === 0) return;
+    const anchoBit = c.width / 12;
+    const mitad = anchoBit / 2;
+    prepararCanvas(c);
+
+    c._redibujar = function(){
+        const ctx2 = prepararCanvas(c);
+        dibujarSeparadores(ctx2, c, anchoBit);
+        ctx2.strokeStyle="#0b7a5a"; ctx2.lineWidth=2; ctx2.setLineDash([]);
+        ctx2.beginPath();
+        let x=0;
+        for(let [n1,n2] of nivelesDobles){
+            let y1 = centro - n1*escala;
+            let y2 = centro - n2*escala;
+            ctx2.lineTo(x,y1); ctx2.lineTo(x+mitad,y1);
+            ctx2.lineTo(x+mitad,y2); ctx2.lineTo(x+anchoBit,y2);
+            x += anchoBit;
+        }
+        ctx2.stroke();
+    };
+    c._redibujar();
+    iniciarBarrido(c);
+}
+
+function aplicarSelector(){
+    const val = document.getElementById("selector").value;
+    const ids = ["nrzl","nrzi","manchester","mandif","ami","pseudo"];
+    ids.forEach(id => {
+        const card = document.getElementById("card-"+id);
+        card.style.display = (val === "todas" || val === id) ? "block" : "none";
+    });
+}
+
+function dibujarTodo(){
+    let bits = bitInput.value;
+    if(bits.length !== 12) return;
+
+    // Cancelar animaciones previas
+    ["nrzl","nrzi","manchester","mandif","ami","pseudo"].forEach(id=>{
+        const c = document.getElementById(id);
+        if(c._anim) { cancelAnimationFrame(c._anim); c._anim=null; }
+    });
+
+    dibujarSimple("nrzl", nrzL(bits));
+    dibujarSimple("nrzi", nrzI(bits));
+    dibujarDoble("manchester", manchester(bits));
+    dibujarDoble("mandif", manchesterDif(bits));
+    dibujarSimple("ami", ami(bits));
+    dibujarSimple("pseudo", pseudoternario(bits));
+
+    aplicarSelector();
+}
+
+function ajustarCanvas(){
+    ["nrzl","nrzi","manchester","mandif","ami","pseudo"].forEach(id=>{
+        const c = document.getElementById(id);
+        const w = c.parentElement.clientWidth - 32;
+        if(w > 0) c.width = w;
+    });
+}
+
+window.addEventListener('resize', ()=>{ 
+    if(document.getElementById('pantalla-graficas').classList.contains('activa')) {
+        ajustarCanvas(); 
+        dibujarTodo(); 
+    }
+});
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+            .then(() => console.log("Aplicación preparada correctamente"))
+            .catch(error => console.error("Error:", error));
+    });
+}
+</script>
+</body>
+</html>
