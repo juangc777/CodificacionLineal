@@ -1,0 +1,2 @@
+# CodificacionLineal
+aplicacion mobil
