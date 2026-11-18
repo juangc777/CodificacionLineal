@@ -1,13 +1,15 @@
 
 
-const CACHE_NAME = "codificacion-lineal-v2";
+const CACHE_NAME = "codificacion-lineal-v3";
 
 const ARCHIVOS = [
     "./",
     "./index.html",
     "./manifest.json",
     "./img/ico.jpg",
-    "./img/uaem.png"
+    "./img/uaem.png",
+    "./img/icon-192.png",
+    "./img/icon-512.png"
 ];
 
 self.addEventListener("install", event => {
